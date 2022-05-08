@@ -1,0 +1,13 @@
+[package]
+name = "axum_playground"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.5.4"
+serde = { version = "1.0.137", features = ["derive"] }
+tokio = { version = "1.18.1", features = ["full"] }
+tracing-subscriber = "0.3.11"
+tracing = "0.1.34"
