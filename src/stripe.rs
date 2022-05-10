@@ -1,9 +1,11 @@
 use axum::{
-    extract::{Form, Json},
+    extract::{Form, Json, TypedHeader},
+    handler::Handler,
     http::{Response, StatusCode},
     response::{IntoResponse, Redirect},
 };
 use dotenv_codegen::dotenv;
+use headers::{Header, HeaderMap, HeaderName};
 use serde::{Deserialize, Serialize};
 use stripe::{
     CheckoutSession, CheckoutSessionMode, Client, CreateCheckoutSession,
@@ -11,6 +13,8 @@ use stripe::{
     CreateCheckoutSessionLineItemsPriceDataProductData, Currency, Webhook, WebhookEndpoint,
     WebhookEvent,
 };
+
+const STRIPE_SIGNATURE_HEADER: HeaderName = HeaderName::from_static("stripe-signature");
 
 pub async fn handle_single_stripe_payment(
     Form(data): Form<HandleStripePaymentBody>,
@@ -41,8 +45,14 @@ pub async fn handle_single_stripe_payment(
     Redirect::to(&redirect_uri)
 }
 
-pub async fn stripe_webhook(Json(data): Json<WebhookEvent>) -> impl IntoResponse {
-    dbg!(data);
+pub async fn stripe_webhook(
+    Json(data): Json<WebhookEvent>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    if let Some(stripe_signature_header) = headers.get("stripe-signature") {
+        let s = stripe_signature_header.to_str().unwrap();
+        dbg!(s);
+    }
     StatusCode::OK
 }
 

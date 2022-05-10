@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.5.4"
+axum = { version = "0.5.4", features = ["headers"] }
 serde = { version = "1.0.137", features = ["derive"] }
 tokio = { version = "1.18.1", features = ["full"] }
 tracing-subscriber = "0.3.11"
@@ -15,3 +15,4 @@ eyre = "0.6.8"
 async-stripe = { version = "0.14", features = ["runtime-tokio-hyper"] }
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
+headers = "0.3.7"
