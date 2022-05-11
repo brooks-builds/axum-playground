@@ -1,12 +1,15 @@
 use axum::{
-    extract::{Form, Json, TypedHeader},
+    body::{Body, Bytes},
+    extract::{Form, Json, RawBody, TypedHeader},
     handler::Handler,
     http::{Response, StatusCode},
     response::{IntoResponse, Redirect},
 };
 use dotenv_codegen::dotenv;
 use headers::{Header, HeaderMap, HeaderName};
+use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use stripe::{
     CheckoutSession, CheckoutSessionMode, Client, CreateCheckoutSession,
     CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsPriceData,
@@ -14,7 +17,7 @@ use stripe::{
     WebhookEvent,
 };
 
-const STRIPE_SIGNATURE_HEADER: HeaderName = HeaderName::from_static("stripe-signature");
+type HmacSha256 = Hmac<Sha256>;
 
 pub async fn handle_single_stripe_payment(
     Form(data): Form<HandleStripePaymentBody>,
@@ -45,13 +48,19 @@ pub async fn handle_single_stripe_payment(
     Redirect::to(&redirect_uri)
 }
 
-pub async fn stripe_webhook(
-    Json(data): Json<WebhookEvent>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
+pub async fn stripe_webhook(data: Bytes, headers: HeaderMap) -> impl IntoResponse {
     if let Some(stripe_signature_header) = headers.get("stripe-signature") {
-        let s = stripe_signature_header.to_str().unwrap();
-        dbg!(s);
+        let stripe_signature_secret = dotenv!("STRIPE_SIGNATURE");
+        let body = String::from_utf8(data.to_vec()).unwrap();
+        dbg!(&body);
+        let webhook = Webhook::construct_event(
+            &body,
+            stripe_signature_header.to_str().unwrap(),
+            &stripe_signature_secret,
+        )
+        .unwrap();
+
+        dbg!("here?");
     }
     StatusCode::OK
 }
