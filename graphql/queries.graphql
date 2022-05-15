@@ -3,3 +3,10 @@ mutation CreateGameMutation($name: String) {
     id
   }
 }
+
+query ListGames {
+  games {
+    id
+    name
+  }
+}

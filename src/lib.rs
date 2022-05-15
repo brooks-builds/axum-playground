@@ -7,7 +7,7 @@ use axum::{
 use eyre::Result;
 
 use crate::{
-    games::create_game::create_game,
+    games::{create_game::create_game, list_games::list_games},
     stripe::{handle_single_stripe_payment, stripe_webhook},
 };
 
@@ -21,7 +21,8 @@ pub async fn run() -> Result<()> {
     let app = Router::new()
         .route("/checkout", post(handle_single_stripe_payment))
         .route("/stripe-webhook", post(stripe_webhook))
-        .route("/games", post(create_game));
+        .route("/games", post(create_game))
+        .route("/games", get(list_games));
 
     let address = SocketAddr::from(([127, 0, 0, 1], 8000));
     tracing::debug!("Listening on {address}");
