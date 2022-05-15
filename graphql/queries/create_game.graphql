@@ -1,0 +1,5 @@
+mutation CreateGameMutation($name: String) {
+  insert_games_one(object: {name: $name}) {
+    id
+  }
+}
