@@ -8,11 +8,13 @@ use eyre::Result;
 
 use crate::{
     games::{create_game::create_game, list_games::list_games},
+    logging::logging,
     stripe::{handle_single_stripe_payment, stripe_webhook},
 };
 
 mod api;
 mod games;
+mod logging;
 pub mod stripe;
 
 pub async fn run() -> Result<()> {
@@ -22,7 +24,8 @@ pub async fn run() -> Result<()> {
         .route("/checkout", post(handle_single_stripe_payment))
         .route("/stripe-webhook", post(stripe_webhook))
         .route("/games", post(create_game))
-        .route("/games", get(list_games));
+        .route("/games", get(list_games))
+        .route("/logging", get(logging));
 
     let address = SocketAddr::from(([127, 0, 0, 1], 8000));
     tracing::debug!("Listening on {address}");
